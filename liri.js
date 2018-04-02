@@ -25,22 +25,24 @@ for (var i = 3; i < nodeArgs.length; i++) {
         userSearch += nodeArgs[i];
     }
 }
+determineCommand();
 
+function determineCommand(){
 //  Liri can take four commands.  Determing which command was used and call the matching function:
-//  1)  my-tweets
-if (liriCommand === "my-tweets"){
-    showTweets();
-//  2)  spotify-this-song
-}else if (liriCommand === "spotify-this-song"){
-    showSpotify(userSearch);
-//  3)  movie-this
-}else if (liriCommand === "movie-this"){
-    showOMDB(userSearch);
-//  4)  do-what-it-says
-}else if (liriCommand === "do-what-it-says"){
-    showRandom();
+    //  1)  my-tweets
+    if (liriCommand === "my-tweets"){
+        showTweets();
+    //  2)  spotify-this-song
+    }else if (liriCommand === "spotify-this-song"){
+        showSpotify(userSearch);
+    //  3)  movie-this
+    }else if (liriCommand === "movie-this"){
+        showOMDB(userSearch);
+    //  4)  do-what-it-says
+    }else if (liriCommand === "do-what-it-says"){
+        showWhatItSays();
+    }
 }
-
 //  node liri.js my-tweets
 //  This will show your last 20 tweets and when they were created at in your terminal / bash window.
 function showTweets() {
@@ -140,6 +142,23 @@ function showOMDB(userSearch) {
             console.log(movieInfo);
         } else {
            return console.log('Error occurred: ' + error);
+        }
+    });
+}
+
+//  node liri.js do-what-it-says
+//  Using the fs Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
+//      * It should run spotify-this-song for "I Want it That Way," as follows the text in random.txt.
+function showWhatItSays(){
+    fs.readFile("random.txt", "utf8", function (error, data) {
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }else {
+            var dataArr = data.split(", ");
+            liriCommand = dataArr[0];
+            userSearch = dataArr[1];
+        determineCommand();
         }
     });
 }
