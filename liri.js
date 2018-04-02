@@ -6,8 +6,6 @@ var Spotify = require("node-spotify-api");
 var Twitter = require("twitter");
 var fs = require("fs");
 
-
-
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 
@@ -16,10 +14,9 @@ var client = new Twitter(keys.twitter);
 var nodeArgs = process.argv;
 // Create a variable to store the Liri command that was chosen.  
 var liriCommand = process.argv[2];
-
 // Create an empty variable for holding the user's search which the user inputs after the Liri command.
 var userSearch = "";
-    // Loop through all the words in the node argument to handle the inclusion of "+"s
+// Loop through all the words in the node argument to handle the inclusion of "+"s
 for (var i = 3; i < nodeArgs.length; i++) {
     if (i > 3 && i < nodeArgs.length) {
         userSearch = userSearch + "+" + nodeArgs[i];
@@ -30,13 +27,16 @@ for (var i = 3; i < nodeArgs.length; i++) {
 }
 
 //  Liri can take four commands.  Determing which command was used and call the matching function:
-//  my-tweets
+//  1)  my-tweets
 if (liriCommand === "my-tweets"){
     showTweets();
+//  2)  spotify-this-song
 }else if (liriCommand === "spotify-this-song"){
     showSpotify(userSearch);
+//  3)  movie-this
 }else if (liriCommand === "movie-this"){
-    showMovie(userSearch);
+    showOMDB(userSearch);
+//  4)  do-what-it-says
 }else if (liriCommand === "do-what-it-says"){
     showRandom();
 }
@@ -60,6 +60,8 @@ function showTweets() {
                     "--------------------------------------------\n";
             }
             console.log(tweetList);
+        } else if (error) {
+            throw error;
         }
     });
 }
@@ -98,21 +100,46 @@ function showSpotify(userSearch){
     });
 }
 
+// node liri.js movie-this '<movie name here>'
+// This will output the following information to your terminal / bash window:
+//    * Title of the movie.
+//    * Year the movie came out.
+//    * IMDB Rating of the movie.
+//    * Rotten Tomatoes Rating of the movie.
+//    * Country where the movie was produced.
+//    * Language of the movie.
+//    * Plot of the movie.
+//    * Actors in the movie.
+function showOMDB(userSearch) {
+    var movie;
+    if (userSearch === "") {
+        movie = "Mr. Nobody";
+    } else {
+        movie = userSearch;
+    }
+    //  Run a request to the OMDB API with the movie specified
+    var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
 
-
-
-
-
-
-
-
-// Then run a request to the OMDB API with the movie specified
-// request("http://www.omdbapi.com/?t=remember+the+titans&y=&plot=short&apikey=trilogy", function (error, response, body) {
-
-//     // If the request is successful (i.e. if the response status code is 200)
-//     if (!error && response.statusCode === 200) {
-
-//         // Parse the body of the site and recover just the imdbRating
-//         // (Note: The syntax below for parsing isn't obvious. Just spend a few moments dissecting it).
-//         console.log("The movie's rating is: " + JSON.parse(body).imdbRating);
-//     }
+    request(queryUrl, function (error, response, body) {
+        // If the request is successful
+        if (!error && response.statusCode === 200) {
+            var movieData = JSON.parse(body);
+            var movieInfo =
+                "\n----------------------------------------------------------------\n"
+                + "Movie Information:\n"
+                + "----------------------------------------------------------------\n"
+                + "Title: " + movieData.Title + "\n"
+                + "Release Year: " + movieData.Year + "\n"
+                + "IMDB Rating: " + movieData.Ratings[0].Value + "\n"
+                + "Rotten Tomatoes Rating: " + movieData.Ratings[1].Value + "\n"
+                + "Country where produced: " + movieData.Country + "\n"
+                + "Language: " + movieData.Language + "\n"
+                + "Plot: " + movieData.Plot + "\n"
+                + "Actors: " + movieData.Actors + "\n"
+                + "----------------------------------------------------------------\n";
+            console.log(movieInfo);
+        } else {
+           return console.log('Error occurred: ' + error);
+        }
+    });
+}
